@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Meal Pre-order, Dining Slot Booking & Payment</title>
+<style>
+  /* Reset and base styles */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f8fa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #0066cc;
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  main {
+    flex: 1 0 auto;
+    max-width: 900px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    margin-top: 0;
+    color: #004080;
+    border-bottom: 3px solid #0066cc;
+    padding-bottom: 0.3rem;
+  }
+
+  /* Menu List */
+  .menu-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .menu-item {
+    background: #e6f0ff;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    box-shadow: inset 0 0 8px #cce0ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .menu-item h3 {
+    margin: 0 0 0.25rem 0;
+    color: #004080;
+  }
+  .menu-item p {
+    flex-grow: 1;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: #193366;
+  }
+  .menu-item .price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #003366;
+  }
+
+  /* Pre-order form */
+  .preorder-form {
+    margin-bottom: 2rem;
+  }
+  .preorder-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .preorder-item label {
+    flex: 1 0 60%;
+    font-weight: 600;
+  }
+  .preorder-item input[type="number"] {
+    width: 60px;
+    padding: 0.3rem;
+    border: 1.8px solid #0066cc;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #004080;
+    text-align: center;
+    transition: border-color 0.2s ease;
+  }
+  .preorder-item input[type="number"]:focus {
+    outline: none;
+    border-color: #004080;
+  }
+
+  /* Booking */
+  .booking-section {
+    margin-bottom: 2rem;
+  }
+
+  .booking-section label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #004080;
+  }
+
+  .booking-section input[type="date"],
+  .booking-section select {
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1.8px solid #0066cc;
+    font-size: 1rem;
+    color: #004080;
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s ease;
+  }
+  .booking-section input[type="date"]:focus,
+  .booking-section select:focus {
+    outline: none;
+    border-color: #004080;
+  }
+
+  /* Summary */
+  .summary-section {
+    background: #f0f8ff;
+    border: 2px solid #99c2ff;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+  .summary-section h3 {
+    margin-top: 0;
+    color: #003366;
+    font-weight: 700;
+  }
+  .summary-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0;
+  }
+  .summary-list li {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #003366;
+  }
+
+  /* Submit Button */
+  .submit-btn {
+    display: inline-block;
+    background-color: #0073e6;
+    color: white;
+    padding: 0.8rem 2rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 35px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 7px 15px rgba(0,115,230,0.4);
+  }
+  .submit-btn:hover, .submit-btn:focus {
+    background-color: #004a99;
+    outline: none;
+  }
+
+  /* Payment Scanner Section */
+  .payment-section {
+    margin-bottom: 2rem;
+    border: 2px solid #66a3ff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    background: #e6f3ff;
+  }
+  .payment-section h2 {
+    color: #003366;
+    border-bottom: 3px solid #3399ff;
+  }
+  .payment-status {
+    font-size: 1rem;
+    margin-top: 1rem;
+    color: #004d00;
+    font-weight: 700;
+    min-height: 1.5em;
+  }
+  .payment-error {
+    color: #cc0000;
+  }
+  #qr-reader {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 1rem;
+  }
+  .scanner-btn {
+    background-color: #004a99;
+    color: white;
+    padding: 0.7rem 1.8rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 5px 12px rgba(0,74,153,0.5);
+  }
+  .scanner-btn:hover, .scanner-btn:focus {
+    background-color: #002d66;
+    outline: none;
+  }
+
+  /* QR Code Generator Section */
+  .qr-generator-section {
+    margin-bottom: 2rem;
+    border: 2px solid #3399ff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    background: #dcefff;
+  }
+  .qr-generator-section h2 {
+    color: #003366;
+    border-bottom: 3px solid #3399ff;
+  }
+  #qr-code {
+    margin-top: 1rem;
+    width: 200px;
+    height: 200px;
+  }
+  .qr-instructions {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+    color: #003366;
+  }
+  .generate-btn {
+    background-color: #0073e6;
+    color: white;
+    padding: 0.7rem 1.8rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 5px 12px rgba(0,115,230,0.5);
+  }
+  .generate-btn:hover, .generate-btn:focus {
+    background-color: #004a99;
+    outline: none;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    background: #e6f0ff;
+    flex-shrink: 0;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .menu-list {
+      grid-template-columns: 1fr;
+    }
+    .preorder-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .preorder-item label {
+      margin-bottom: 0.3rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  Student Meal Pre-order, Dining Slot Booking & Payment
+</header>
+<main>
+  <section aria-label="Menu">
+    <h2>Menu</h2>
+    <div class="menu-list" id="menu-list">
+      <!-- Menu items inserted by JavaScript -->
+    </div>
+  </section>
+
+  <section aria-label="Meal Pre-order" class="preorder-form">
+    <h2>Pre-order Your Meals</h2>
+    <form id="preorder-form">
+      <!-- Preorder inputs inserted by JavaScript -->
+    </form>
+  </section>
+
+  <section aria-label="Dining Slot Booking" class="booking-section">
+    <h2>Book Your Dining Slot</h2>
+    <label for="dining-date">Select Date</label>
+    <input type="date" id="dining-date" name="dining-date" required min="" />
+    <label for="dining-time">Select Time Slot</label>
+    <select id="dining-time" name="dining-time" required>
+      <option value="" disabled selected>Select a time slot</option>
+      <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+      <option value="12:30 PM - 1:30 PM">12:30 PM - 1:30 PM</option>
+      <option value="1:30 PM - 2:30 PM">1:30 PM - 2:30 PM</option>
+      <option value="5:30 PM - 6:30 PM">5:30 PM - 6:30 PM</option>
+      <option value="6:30 PM - 7:30 PM">6:30 PM - 7:30 PM</option>
+    </select>
+  </section>
+
+  <section aria-label="Order Summary and Submit">
+    <h2>Review and Submit</h2>
+    <div class="summary-section" id="order-summary" aria-live="polite">
+      <h3>Your Order Summary</h3>
+      <ul class="summary-list" id="summary-list">
+        <li>No items selected yet.</li>
+      </ul>
+      <p><strong>Dining Slot:</strong> <span id="summary-slot">Not selected</span></p>
+      <button class="submit-btn" type="button" id="submit-btn" disabled>Submit Order & Booking</button>
+    </div>
+  </section>
+
+  <section aria-label="Payment Scanner" class="payment-section">
+    <h2>Payment Scanner</h2>
+    <button class="scanner-btn" id="start-scan-btn">Start Scan Payment QR Code</button>
+    <div id="qr-reader" style="display:none;"></div>
+    <p class="payment-status" id="payment-status"></p>
+    <button class="scanner-btn" id="stop-scan-btn" style="display:none; margin-top: 0.8rem;">Stop Scan</button>
+  </section>
+
+  <section aria-label="Payment QR Code Generator" class="qr-generator-section">
+    <h2>Generate Payment QR Code</h2>
+    <button class="generate-btn" id="generate-qr-btn">Generate Payment QR Code</button>
+    <div id="qr-code"></div>
+    <p class="qr-instructions">Scan this QR code to pay the total amount for your pre-ordered meal.</p>
+  </section>
+</main>
+<footer>
+  &copy; 2024 Student Dining Services
+</footer>
+
+<!-- Import libraries -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+  // Sample menu data
+  const menuItems = [
+        { id: 1, name: "Mini meal", description: "rice with curry and sambar and pappd", price: 50 },
+    { id: 2, name: "Chicken biryani", description: "Biryani rice with gravy and salad", price: 120 },
+    { id: 3, name: "Paneer biryani", description: "paneer biryani with gravy and salad", price: 90 },
+    { id: 4, name: "Chicken gheeroast", description: "6-8 pieces of Chicken", price: 100 },
+    { id: 5, name: "Paneer Chilly", description: "6-8 pieces of paneer", price: 100 },
+    { id: 6, name: "chicke Kabab", description: "one piece.", price: 25 },
+	{ id: 6, name: "chicke Kabab one plate", description: "five piece.", price: 100 },
+  ];
+
+  const menuListEl = document.getElementById('menu-list');
+  const preorderFormEl = document.getElementById('preorder-form');
+  const summaryListEl = document.getElementById('summary-list');
+  const summarySlotEl = document.getElementById('summary-slot');
+  const submitBtnEl = document.getElementById('submit-btn');
+  const diningDateEl = document.getElementById('dining-date');
+  const diningTimeEl = document.getElementById('dining-time');
+
+  // Payment scanner elements
+  const startScanBtn = document.getElementById('start-scan-btn');
+  const stopScanBtn = document.getElementById('stop-scan-btn');
+  const qrReaderDiv = document.getElementById('qr-reader');
+  const paymentStatusEl = document.getElementById('payment-status');
+
+  // QR code generator elements
+  const generateQrBtn = document.getElementById('generate-qr-btn');
+  const qrCodeContainer = document.getElementById('qr-code');
+  let qrcode = null;
+
+  // Set min date for the date picker to today
+  function setMinDate() {
+    const today = new Date().toISOString().split('T')[0];
+    diningDateEl.setAttribute('min', today);
+  }
+  setMinDate();
+
+  // Render menu items
+  function renderMenu() {
+    menuItems.forEach(item => {
+      const itemDiv = document.createElement('div');
+      itemDiv.classList.add('menu-item');
+      itemDiv.innerHTML = `
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <p class="price">$${item.price.toFixed(2)}</p>
+      `;
+      menuListEl.appendChild(itemDiv);
+    });
+  }
+
+  // Render preorder item inputs
+  function renderPreorderForm() {
+    menuItems.forEach(item => {
+      const preorderDiv = document.createElement('div');
+      preorderDiv.classList.add('preorder-item');
+      preorderDiv.innerHTML = `
+        <label for="meal-${item.id}">${item.name} ($${item.price.toFixed(2)})</label>
+        <input type="number" id="meal-${item.id}" name="meal-${item.id}" min="0" max="10" value="0" />
+      `;
+      preorderFormEl.appendChild(preorderDiv);
+    });
+  }
+
+  // Update order summary
+  function updateSummary() {
+    const selectedItems = [];
+    menuItems.forEach(item => {
+      const qty = parseInt(document.getElementById(`meal-${item.id}`).value, 10) || 0;
+      if (qty > 0) {
+        selectedItems.push({ name: item.name, qty, price: item.price, total: item.price * qty });
+      }
+    });
+
+    // Update summary list UI
+    summaryListEl.innerHTML = '';
+    if (selectedItems.length === 0) {
+      summaryListEl.innerHTML = '<li>No items selected yet.</li>';
+    } else {
+      let grandTotal = 0;
+      selectedItems.forEach(i => {
+        grandTotal += i.total;
+        const li = document.createElement('li');
+        li.textContent = `${i.qty} x ${i.name} - $${i.total.toFixed(2)}`;
+        summaryListEl.appendChild(li);
+      });
+      const totalLi = document.createElement('li');
+      totalLi.style.fontWeight = '700';
+      totalLi.style.marginTop = '0.5rem';
+      totalLi.textContent = `Total: $${grandTotal.toFixed(2)}`;
+      summaryListEl.appendChild(totalLi);
+    }
+
+    // Update dining slot summary
+    let dateVal = diningDateEl.value;
+    let timeVal = diningTimeEl.value;
+    if (dateVal && timeVal) {
+      const dateObj = new Date(dateVal + 'T00:00:00');
+      const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+      summarySlotEl.textContent = `${formattedDate} at ${timeVal}`;
+    } else {
+      summarySlotEl.textContent = 'Not selected';
+    }
+
+    // Enable submit button only if at least one item selected and slot selected
+    submitBtnEl.disabled = !(selectedItems.length > 0 && dateVal && timeVal);
+  }
+
+  // Handle submission
+  function handleSubmit() {
+    // Prepare order details
+    const orderDetails = [];
+    menuItems.forEach(item => {
+      const qty = parseInt(document.getElementById(`meal-${item.id}`).value, 10) || 0;
+      if (qty > 0) {
+        orderDetails.push(`${qty} x ${item.name}`);
+      }
+    });
+    const dateVal = diningDateEl.value;
+    const timeVal = diningTimeEl.value;
+    const dateObj = new Date(dateVal + 'T00:00:00');
+    const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Show confirmation message
+    alert(
+      `Thank you for your order!\n\nMeal(s):\n- ${orderDetails.join('\n- ')}\n\nDining Slot:\n${formattedDate} at ${timeVal}`
+    );
+
+    // Reset form and summary and generated QR code
+    preorderFormEl.reset();
+    diningDateEl.value = '';
+    diningTimeEl.value = '';
+    updateSummary();
+    clearQrCode();
+  }
+
+  // Initialize all rendering and event listeners for meal ordering
+  function initMealOrdering() {
+    renderMenu();
+    renderPreorderForm();
+    updateSummary();
+
+    // Add listeners to inputs
+    menuItems.forEach(item => {
+      const qtyInput = document.getElementById(`meal-${item.id}`);
+      qtyInput.addEventListener('input', () => {
+        updateSummary();
+        clearQrCode();
+      });
+    });
+
+    diningDateEl.addEventListener('input', () => {
+      updateSummary();
+      clearQrCode();
+    });
+    diningTimeEl.addEventListener('change', () => {
+      updateSummary();
+      clearQrCode();
+    });
+
+    submitBtnEl.addEventListener('click', handleSubmit);
+  }
+
+  // Payment QR Code Scanner Setup
+  let html5QrCode = null;
+  function startScanner() {
+    paymentStatusEl.textContent = 'Starting scanner...';
+    qrReaderDiv.style.display = 'block';
+    startScanBtn.style.display = 'none';
+    stopScanBtn.style.display = 'inline-block';
+
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("qr-reader");
+    }
+
+    const config = { fps: 10, qrbox: 250 };
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+      qrCodeMessage => {
+        // QR Code successfully scanned
+        paymentStatusEl.textContent = `Payment QR Code Scanned: ${qrCodeMessage}`;
+        paymentStatusEl.classList.remove('payment-error');
+
+        // Stop scanning after successful scan
+        stopScanner();
+
+        // Simulate payment processing: show alert
+        alert(`Payment confirmed!\nData: ${qrCodeMessage}`);
+      },
+      errorMessage => {
+        // Ignore scan errors or log if needed
+        // console.log(`Scan error: ${errorMessage}`);
+      })
+    .catch(err => {
+      paymentStatusEl.textContent = `Scanner error: ${err}`;
+      paymentStatusEl.classList.add('payment-error');
+      stopScanner();
+    });
+  }
+  function stopScanner() {
+    stopScanBtn.style.display = 'none';
+    startScanBtn.style.display = 'inline-block';
+    qrReaderDiv.style.display = 'none';
+
+    if (html5QrCode) {
+      html5QrCode.stop()
+        .then(() => {
+          paymentStatusEl.textContent = 'Scanner stopped.';
+        })
+        .catch(err => {
+          paymentStatusEl.textContent = `Failed to stop scanner: ${err}`;
+          paymentStatusEl.classList.add('payment-error');
+        });
+    }
+  }
+
+  function initPaymentScanner() {
+    startScanBtn.addEventListener('click', startScanner);
+    stopScanBtn.addEventListener('click', stopScanner);
+  }
+
+  // Generate QR Code for payment
+  function generatePaymentQRCode() {
+    clearQrCode();
+    const selectedItems = [];
+    let totalAmount = 0;
+    menuItems.forEach(item => {
+      const qty = parseInt(document.getElementById(`meal-${item.id}`).value, 10) || 0;
+      if (qty > 0) {
+        selectedItems.push({ name: item.name, qty, price: item.price, total: item.price * qty });
+        totalAmount += item.price * qty;
+      }
+    });
+
+    if (selectedItems.length === 0) {
+      alert("Please select at least one meal item to generate a payment QR code.");
+      return;
+    }
+
+    const dateVal = diningDateEl.value;
+    const timeVal = diningTimeEl.value;
+    if (!dateVal || !timeVal) {
+      alert("Please select your dining date and time slot to generate payment QR code.");
+      return;
+    }
+
+    // Construct a dummy payment URL or string that encodes payment amount and order info
+    // For example purposes, we create a URL with query params (normally this would be from your payment processor)
+    const paymentData = {
+      amount: totalAmount.toFixed(2),
+      currency: 'USD',
+      description: `Meal pre-order for ${dateVal} at ${timeVal}`,
+      orderId: `ORD${Date.now()}`
+    };
+    const paymentUrl = `https://payments.example.com/pay?amount=${paymentData.amount}&currency=${paymentData.currency}&desc=${encodeURIComponent(paymentData.description)}&orderId=${paymentData.orderId}`;
+
+    // Generate QR code
+    qrcode = new QRCode(qrCodeContainer, {
+      text: paymentUrl,
+      width: 200,
+      height: 200,
+      colorDark: "#004a99",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  function clearQrCode() {
+    if (qrcode) {
+      qrcode.clear();
+      qrCodeContainer.innerHTML = "";
+      qrcode = null;
+    }
+  }
+
+  function initQrCodeGenerator() {
+    generateQrBtn.addEventListener('click', generatePaymentQRCode);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initMealOrdering();
+    initPaymentScanner();
+    initQrCodeGenerator();
+  });
+</script>
+</body>
+</html>
+
